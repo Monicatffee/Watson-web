@@ -20,18 +20,10 @@ const client = new Client(connectionData);
 //Conexion con openweathermap-node
 const helper = new OpenWeatherMapHelper(
   {
-      APPID: 'YOUR_OPENWEATHERMAP_API_KEY_GOES_HERE',
-      units: "imperial"
+      APPID: '94579102f6fced10f7f9de7bd21b0efc',
   }
 );
 
-api.getCurrentWeatherByCityName('Banska Bystrica')
-	.then((currentWeather) => {
-		console.log(currentWeather);
-	})
-	.catch((error) => {
-		console.log(error.message);
-});
 
 app.use(bodyParser.json());
 app.use(express.static('./public'));//Le informamos a express donde estara el contenido estatico
@@ -84,6 +76,20 @@ app.post('/conversation/', (req, res) => {
             });
             
         //console.log('Buscar intenttt: ',JSON.stringify(response, null, 2));
+      }else if(intencion.indexOf('Clima') != -1){
+        console.log('response', response.entities[0].value);
+        let entidad = (response.entities[0].value).toLowerCase() ;
+        console.log('entidad', entidad);
+        helper.getCurrentWeatherByCityName(entidad, (err, currentWeather) => {
+          if(err){
+              console.log(err);
+          }
+          else{
+              response.output.text = response.output.text+currentWeather.weather[0].description;
+              res.json(response); 
+          }
+      });
+
       }else{
         res.json(response);
       }
