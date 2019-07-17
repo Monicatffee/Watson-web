@@ -37,7 +37,7 @@ const response = await (await fetch(uri, {
   
 
   const template = templateChatMessage(response.output.text, 'watson');
-
+  console.log(template);
   InsertTemplateInTheChat(template);
 };
 

@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.17.1",
+    "openweathermap-node": "^1.1.2",
     "pg": "^7.11.0",
     "watson-developer-cloud": "^4.0.1"
   }
