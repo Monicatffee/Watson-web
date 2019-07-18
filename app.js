@@ -2,20 +2,9 @@ const AssistantV1 = require('watson-developer-cloud/assistant/v1');
 const OpenWeatherMapHelper = require("openweathermap-node");
 const express = require('express');
 const bodyParser = require('body-parser');
-const { Client } = require('pg');
+const postG = require('./database.js');
 
 const app = express();
-
-//Conexion con DB
-const connectionData = {
-  user: 'postgres',
-  host: 'localhost',
-  database: 'db_watson',
-  password: 'admin',
-  port: 5433,//5432
-}
-const client = new Client(connectionData);
-
 
 //Conexion con openweathermap-node
 const helper = new OpenWeatherMapHelper(
@@ -45,8 +34,8 @@ app.post('/conversation/', (req, res) => {
     context,
   };
 
-  service.message(params, (err, response) => {
-    client.connect();
+  service.message(params, async (err, response) => {
+    //client.connect();
     let intencion = response.intents[0].intent;
     if(intencion.indexOf('undefined') != -1){
       //console.log('Error', err);
@@ -57,24 +46,11 @@ app.post('/conversation/', (req, res) => {
         console.error(err);
         res.status(500).json(err);
       } else if(intencion.indexOf('Creditos') != -1){
-        console.log('entroooooo');
-        client.query("SELECT monto FROM public.precios where nombre = 'credito'")
-            .then(cons=> {
-              console.log('Entro a consulta ');
-              let consulta = cons.rows[0].monto;
-              console.log('consulta ',consulta);
-              //console.log('Buscar response: ',JSON.stringify(response, null, 2));
-              console.log('response ',response.output.text + consulta);
-              respuesta = response.output.text = response.output.text+consulta;
-              console.log('respuesta'.respuesta);
-              res.json(response);
-              client.end();
-            })
-            .catch(err => {
-              console.log('Error', err);
-              client.end()
-            });
-            
+        let consulta = await postG.queryDB('monto', 'nombre', "'credito'");
+        console.log('consulta desde app ', consulta);
+        response.output.text = response.output.text + consulta;
+        console.log(' Respuesta '+ response.output.text );
+        res.json(response);
         //console.log('Buscar intenttt: ',JSON.stringify(response, null, 2));
       }else if(intencion.indexOf('Clima') != -1){
         console.log('response', response.entities[0].value);
